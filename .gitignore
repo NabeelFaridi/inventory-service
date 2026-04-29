@@ -1,0 +1,21 @@
+# Maven
+target/
+*.jar
+*.war
+*.ear
+
+# IntelliJ / VS Code
+.idea/
+*.iml
+.vscode/
+*.class
+
+# Spring Boot DevTools restart file
+.spring-boot-devtools.properties
+
+# Secrets — never commit the real .env
+.env
+
+# OS
+.DS_Store
+Thumbs.db
