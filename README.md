@@ -65,7 +65,7 @@ graph TD
 **Requirements:** Docker Desktop running.
 
 ```bash
-git clone https://github.com/NabeelFarid/inventory-service.git
+git clone https://github.com/NabeelFaridi/inventory-service.git
 cd inventory-service
 
 cp .env.example .env
