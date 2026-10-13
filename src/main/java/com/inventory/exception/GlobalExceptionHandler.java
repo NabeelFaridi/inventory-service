@@ -1,6 +1,9 @@
 package com.inventory.exception;
 
 import org.springframework.http.*;
+import org.springframework.http.converter.HttpMessageNotReadableException;
+import org.springframework.orm.ObjectOptimisticLockingFailureException;
+import org.springframework.security.core.AuthenticationException;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.*;
@@ -50,6 +53,37 @@ public class GlobalExceptionHandler {
         problem.setType(URI.create("https://problems/validation"));
         problem.setProperty("timestamp", Instant.now());
         problem.setProperty("errors", fieldErrors);
+        return problem;
+    }
+
+    // Without these, the catch-all below would turn client errors into 500s
+
+    @ExceptionHandler(AuthenticationException.class)
+    public ProblemDetail handleAuthentication(AuthenticationException ex) {
+        // Deliberately vague — don't reveal whether the username or the password was wrong
+        ProblemDetail problem = ProblemDetail.forStatusAndDetail(HttpStatus.UNAUTHORIZED, "Invalid username or password");
+        problem.setTitle("Unauthorized");
+        problem.setType(URI.create("https://problems/unauthorized"));
+        problem.setProperty("timestamp", Instant.now());
+        return problem;
+    }
+
+    @ExceptionHandler(HttpMessageNotReadableException.class)
+    public ProblemDetail handleUnreadable(HttpMessageNotReadableException ex) {
+        ProblemDetail problem = ProblemDetail.forStatusAndDetail(HttpStatus.BAD_REQUEST, "Malformed JSON request body");
+        problem.setTitle("Bad Request");
+        problem.setType(URI.create("https://problems/bad-request"));
+        problem.setProperty("timestamp", Instant.now());
+        return problem;
+    }
+
+    @ExceptionHandler(ObjectOptimisticLockingFailureException.class)
+    public ProblemDetail handleOptimisticLock(ObjectOptimisticLockingFailureException ex) {
+        ProblemDetail problem = ProblemDetail.forStatusAndDetail(HttpStatus.CONFLICT,
+                "The resource was modified by another request — reload and retry");
+        problem.setTitle("Conflict");
+        problem.setType(URI.create("https://problems/conflict"));
+        problem.setProperty("timestamp", Instant.now());
         return problem;
     }
 

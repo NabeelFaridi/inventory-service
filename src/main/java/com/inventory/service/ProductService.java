@@ -70,7 +70,8 @@ public class ProductService {
 
         int oldQty = product.getQuantity();
         productMapper.updateEntity(request, product);
-        Product saved = productRepository.save(product);
+        // Flush so the @Version increment is reflected in the response
+        Product saved = productRepository.saveAndFlush(product);
         int newQty = saved.getQuantity();
 
         if (newQty != oldQty) {

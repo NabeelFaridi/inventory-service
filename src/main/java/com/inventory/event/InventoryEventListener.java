@@ -4,8 +4,9 @@ import com.inventory.entity.InventoryEvent;
 import com.inventory.repository.InventoryEventRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.event.TransactionPhase;
 import org.springframework.transaction.event.TransactionalEventListener;
 
@@ -21,8 +22,12 @@ public class InventoryEventListener {
     /**
      * AFTER_COMMIT means this only runs if the triggering transaction committed.
      * A rolled-back stock update therefore produces no audit row — correct behaviour.
+     *
+     * REQUIRES_NEW is required: by AFTER_COMMIT the original transaction has already committed,
+     * so a plain save() would join it and never be flushed — the audit row would be silently lost.
      */
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
     public void onStockChanged(StockChangedEvent event) {
         InventoryEvent row = InventoryEvent.builder()
                 .productId(event.productId())
